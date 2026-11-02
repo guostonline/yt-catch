@@ -18,9 +18,15 @@ curl -fsSL https://raw.githubusercontent.com/guostonline/yt-catch/main/install.s
 irm https://raw.githubusercontent.com/guostonline/yt-catch/main/install.ps1 | iex
 ```
 
-The installer clones Catch into `~/.catch`, sets up its virtual environment, checks for Python, git and ffmpeg, and adds a global `catch` command. Then start it with:
+The installer clones Catch into `~/.catch`, sets up its virtual environment, checks for Python, git and ffmpeg, and creates a launcher at `~/.local/bin/catch`. Then start it with:
 ```bash
 catch
+```
+
+If your shell can't find `catch`, add `~/.local/bin` to your PATH:
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ---

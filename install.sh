@@ -75,19 +75,22 @@ exec "${INSTALL_DIR}/run.sh" "$@"
 EOF
 chmod +x "$BIN_DIR/catch"
 
-# 7. Ensure ~/.local/bin is in PATH instructions
+# 7. Show how to launch
 echo ""
 echo "========================================="
 echo "   Catch installed successfully! 🎉"
 echo "========================================="
 echo ""
-echo "To start Catch, simply run:"
-echo "   catch"
-echo ""
 
-if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
-  echo "NOTE: Add ~/.local/bin to your PATH if it isn't already:"
-  echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
-  echo "Add the line above to your ~/.bashrc or ~/.zshrc."
+if [[ ":$PATH:" == *":$BIN_DIR:"* ]]; then
+  echo "To start Catch, simply run:"
+  echo "   catch"
+else
+  echo "To start Catch right now, run:"
+  echo "   $BIN_DIR/catch"
   echo ""
+  echo "To get the short catch command, add this line to your ~/.zshrc (or ~/.bashrc):"
+  echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+  echo "Then open a new terminal, or run: source ~/.zshrc"
 fi
+echo ""
