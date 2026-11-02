@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Catch — Save anything. Keep everything. Upload nothing.</title>
+  <meta name="description" content="Catch is a local-first video and audio downloader for YouTube and 1,000+ sites. Up to 8K, MP3 or FLAC, playlists, subtitles and SponsorBlock. No ads, no accounts, no cloud." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="color-scheme" content="dark" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Catch — Save anything. Keep everything. Upload nothing." />
+  <meta property="og:description" content="A local-first downloader for video, audio and playlists. Up to 8K, MP3 or FLAC, subtitles and SponsorBlock. No ads. No accounts. No cloud." />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23a78bfa'/%3E%3Cstop offset='.55' stop-color='%23f472b6'/%3E%3Cstop offset='1' stop-color='%23fbbf24'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230b0d13'/%3E%3Cpath d='M32 15v24m-9-9 9 9 9-9M19 47h26' stroke='url(%23g)' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <style>
+    /* ======================================================================
+       Catch — landing page
+       Single file, no build step. Black canvas, violet accent, hairline rules.
+       ====================================================================== */
+
+    :root {
+      --bg: #000;
+      --fg: #f5f5f7;
+      --muted: #a1a1aa;
+      --dim: #71717a;
+      --faint: #52525b;
+      --line: rgba(255, 255, 255, .08);
+      --line-strong: rgba(255, 255, 255, .16);
+      --violet: #a78bfa;
+      --violet-deep: #6d28d9;
+      --pink: #f472b6;
+      --amber: #fbbf24;
+      --green: #34d399;
+      --grad: linear-gradient(100deg, #ddd6fe 0%, #c4b5fd 18%, #f472b6 62%, #fbbf24 100%);
+      --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --ease: cubic-bezier(.22, .85, .28, 1);
+      --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    h1, h2, h3, h4, p { margin: 0; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    img, svg { display: block; }
+    ::selection { background: rgba(167, 139, 250, .35); color: #fff; }
+    :focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; border-radius: 6px; }
+
+    .container { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .skip {
+      position: fixed; top: 12px; left: 12px; z-index: 100;
+      padding: 10px 14px; border-radius: 8px; background: #fff; color: #000;
+      font-size: 13px; font-weight: 600; transform: translateY(-160%);
+      transition: transform .2s var(--ease);
+    }
+    .skip:focus { transform: none; }
+
+    /* ---------------------------------------------------------------- nav */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 50;
+      border-bottom: 1px solid transparent;
+      transition: background .25s ease, border-color .25s ease, backdrop-filter .25s ease;
+    }
+    .nav.is-scrolled {
+      background: rgba(0, 0, 0, .72);
+      border-bottom-color: var(--line);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+    }
+    .nav-inner {
+      max-width: 1240px; margin: 0 auto; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; letter-spacing: -.02em; }
+    .brand-mark { width: 26px; height: 26px; border-radius: 8px; flex: none; }
+    .brand-name { font-size: 15.5px; }
+    .brand-pill {
+      font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-link {
+      padding: 0 11px; font-size: 13px; color: var(--muted);
+      transition: color .18s ease;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-gh {
+      display: inline-flex; align-items: center; gap: 6px; height: 34px;
+      padding: 0 11px; margin: 0 8px; font-size: 12.5px; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 8px;
+      transition: color .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .nav-gh:hover { color: #fff; border-color: var(--line-strong); background: rgba(255, 255, 255, .04); }
+    .nav-gh .ic { width: 14px; height: 14px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 42px; padding: 0 17px; border-radius: 9px;
+      border: 1px solid transparent; font-size: 13.5px; font-weight: 600;
+      white-space: nowrap; letter-spacing: -.01em;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .btn .ic { width: 15px; height: 15px; }
+    .btn-primary {
+      color: #fff; background: var(--violet-deep);
+      border-color: rgba(255, 255, 255, .12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 10px 30px -14px rgba(124, 58, 237, .9);
+    }
+    .btn-primary:hover { background: #7c3aed; transform: translateY(-1px); }
+    .btn-ghost {
+      color: var(--fg); background: rgba(255, 255, 255, .02); border-color: var(--line-strong);
+    }
+    .btn-ghost:hover { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .24); transform: translateY(-1px); }
+    .btn-sm { height: 34px; padding: 0 13px; font-size: 12.5px; border-radius: 8px; }
+
+    /* --------------------------------------------------------------- hero */
+    .hero { position: relative; padding: 150px 0 40px; }
+    .hero::before {
+      content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .032) 1px, transparent 1px);
+      background-size: 64px 64px;
+      -webkit-mask-image: radial-gradient(ellipse 78% 58% at 50% 0%, #000 18%, transparent 72%);
+      mask-image: radial-gradient(ellipse 78% 58% at 50% 0%, #000 18%, transparent 72%);
+    }
+    .hero-glow {
+      position: absolute; z-index: 0; top: -360px; left: 50%; width: 1150px; height: 780px;
+      transform: translateX(-50%); pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(124, 58, 237, .28) 0%, rgba(124, 58, 237, .10) 38%, transparent 68%);
+      filter: blur(40px);
+    }
+    .hero-inner { position: relative; z-index: 1; text-align: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+      background: rgba(255, 255, 255, .025);
+      font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    }
+    .eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 10px rgba(52, 211, 153, .9);
+      animation: pulse 2.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+    .hero-title {
+      margin: 26px auto 24px; max-width: 16ch;
+      font-size: clamp(43px, 7.6vw, 86px); font-weight: 600; line-height: 1.01;
+      letter-spacing: -.045em; text-wrap: balance;
+    }
+    .grad {
+      background: var(--grad);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+    }
+    .hero-sub {
+      max-width: 660px; margin: 0 auto 36px;
+      color: var(--muted); font-size: 16.5px; line-height: 1.65; letter-spacing: -.005em;
+      text-wrap: balance;
+    }
+    .hero-alt {
+      margin-top: 20px; font-size: 12.5px; color: var(--dim);
+      display: flex; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap;
+    }
+    .hero-alt a { color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, .18); padding-bottom: 1px; }
+    .hero-alt a:hover { color: #fff; border-color: rgba(255, 255, 255, .45); }
+    .hero-alt .ic { width: 13px; height: 13px; }
+    .dot-sep { color: #3f3f46; }
+
+    /* ----------------------------------------------------------- installer */
+    .installer {
+      width: 100%; max-width: 844px; margin: 0 auto; text-align: left;
+      border: 1px solid var(--line-strong); border-radius: var(--radius);
+      background: rgba(255, 255, 255, .022);
+      box-shadow: 0 30px 80px -50px rgba(109, 40, 217, .55), inset 0 1px 0 rgba(255, 255, 255, .05);
+      overflow: hidden;
+      scroll-margin-top: 96px;
+    }
+    .installer-tabs {
+      display: flex; align-items: center; gap: 3px;
+      padding: 5px; border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .018);
+    }
+    .itab {
+      padding: 7px 11px; border-radius: 7px;
+      font-size: 12px; font-weight: 500; color: var(--dim); white-space: nowrap;
+      transition: color .16s ease, background .16s ease;
+    }
+    .itab:hover { color: var(--fg); }
+    .itab.is-active {
+      color: #fff; background: rgba(255, 255, 255, .075);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+    .installer-body {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 12px 12px 15px; background: #050507;
+    }
+    .prompt {
+      flex: none; font-family: var(--mono); font-size: 12px; color: var(--violet);
+      user-select: none;
+    }
+    .cmd-text {
+      flex: 1; min-width: 0;
+      font-family: var(--mono); font-size: 12px; line-height: 1.6; color: #e7e7ee;
+      white-space: pre; overflow-x: auto; scrollbar-width: none;
+    }
+    .cmd-text::-webkit-scrollbar { display: none; }
+    .copy-btn {
+      flex: none; display: inline-flex; align-items: center; gap: 6px;
+      height: 34px; padding: 0 11px; border-radius: 8px;
+      border: 1px solid var(--line-strong); background: rgba(255, 255, 255, .04);
+      font-size: 12px; font-weight: 500; color: #d4d4dc;
+      transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .copy-btn:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+    .copy-btn .ic { width: 13px; height: 13px; }
+    .copy-btn.is-copied { color: var(--green); border-color: rgba(52, 211, 153, .45); background: rgba(52, 211, 153, .07); }
+    .fineprint {
+      margin: 14px auto 0; max-width: 780px;
+      font-size: 12px; line-height: 1.75; color: var(--dim);
+    }
+    .fineprint a { color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, .14); }
+    .fineprint a:hover { color: #fff; }
+    .fineprint .sep { color: #3f3f46; padding: 0 3px; }
+
+    /* ----------------------------------------------------------- hero shot */
+    .shot { position: relative; max-width: 1080px; margin: 66px auto 0; text-align: left; }
+    .float-card {
+      position: absolute; z-index: 3;
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 13px; border: 1px solid var(--line-strong); border-radius: 11px;
+      background: rgba(9, 9, 13, .86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 24px 50px -24px #000;
+      animation: floaty 7s ease-in-out infinite;
+    }
+    .float-card b { font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
+    .float-card span { font-size: 10px; color: var(--dim); letter-spacing: .01em; }
+    .float-card .fc-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 8px var(--violet); }
+    .f-a { left: -34px; top: 27%; animation-delay: -1s; }
+    .f-b { right: -28px; top: 18%; animation-delay: -3.4s; }
+    .f-c { right: -40px; bottom: 16%; animation-delay: -5.2s; }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0) rotate(-1.2deg); }
+      50% { transform: translateY(-8px) rotate(.4deg); }
+    }
+    .window {
+      border: 1px solid rgba(255, 255, 255, .13); border-radius: 16px; overflow: hidden;
+      background: #07070a;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, .7),
+        0 70px 130px -60px rgba(109, 40, 217, .55),
+        0 40px 80px -40px rgba(0, 0, 0, .95);
+    }
+    .window-bar {
+      display: flex; align-items: center; gap: 12px;
+      height: 40px; padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #0c0c11, #08080b);
+    }
+    .window-dots { display: flex; gap: 6px; flex: none; }
+    .window-dots i { width: 9px; height: 9px; border-radius: 50%; background: #2b2b34; }
+    .window-dots i:nth-child(1) { background: #3b2f3a; }
+    .window-dots i:nth-child(2) { background: #3a362c; }
+    .window-dots i:nth-child(3) { background: #2c3a33; }
+    .window-addr {
+      flex: 1; max-width: 340px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      height: 24px; border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, .055); background: rgba(255, 255, 255, .035);
+      font-family: var(--mono); font-size: 10px; color: var(--dim);
+    }
+    .window-addr .ic { width: 10px; height: 10px; }
+    .window-mode {
+      flex: none; font-family: var(--mono); font-size: 9px; letter-spacing: .12em;
+      text-transform: uppercase; color: #4b4b55;
+    }
+    .app {
+      background:
+        radial-gradient(ellipse 75% 52% at 50% 0%, rgba(124, 58, 237, .13), transparent 62%),
+        #060609;
+    }
+    .app-nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      height: 52px; padding: 0 20px; border-bottom: 1px solid var(--line);
+    }
+    .app-brand { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: -.02em; }
+    .app-brand .brand-mark { width: 22px; height: 22px; border-radius: 7px; }
+    .app-brand em {
+      font-style: normal; font-family: var(--mono); font-size: 8px; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--dim);
+      border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+    }
+    .app-nav-right { display: flex; align-items: center; gap: 13px; }
+    .app-engine { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--dim); }
+    .app-engine i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(52, 211, 153, .9); }
+    .app-ghost {
+      border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px;
+      font-size: 10px; color: var(--muted);
+    }
+    .app-main { padding: 28px 28px 30px; }
+    .app-head { text-align: center; }
+    .app-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
+    }
+    .app-eyebrow i { width: 4px; height: 4px; border-radius: 50%; background: var(--violet); }
+    .app-head h3 {
+      margin: 12px 0 17px; font-size: clamp(23px, 3.1vw, 35px); font-weight: 600;
+      line-height: 1.04; letter-spacing: -.045em;
+    }
+    .app-url {
+      display: flex; align-items: center; gap: 9px;
+      max-width: 570px; margin: 0 auto; height: 46px; padding: 0 6px 0 13px;
+      border: 1px solid var(--line-strong); border-radius: 11px;
+      background: rgba(255, 255, 255, .035);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+    }
+    .app-url > .ic { width: 14px; height: 14px; color: #64646f; flex: none; }
+    .app-link {
+      flex: 1; min-width: 0; text-align: left;
+      font-family: var(--mono); font-size: 10.5px; color: #a9a9b6;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .app-fetch {
+      display: inline-flex; align-items: center; gap: 6px; flex: none;
+      height: 34px; padding: 0 12px; border-radius: 8px;
+      background: var(--violet-deep); color: #fff;
+      font-size: 11px; font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+    .app-fetch .ic { width: 11px; height: 11px; }
+    .app-chips {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 13px;
+      margin-top: 13px; font-size: 9.5px; color: #6b6b78;
+    }
+    .app-chips span { display: inline-flex; align-items: center; gap: 4px; }
+    .app-chips .ic { width: 10px; height: 10px; }
+    .app-cols { display: grid; grid-template-columns: 1.55fr 1fr; gap: 11px; margin-top: 21px; text-align: left; }
+    .app-card {
+      border: 1px solid var(--line); border-radius: 11px; overflow: hidden;
+      background: rgba(255, 255, 255, .022);
+    }
+    .app-now { display: flex; min-width: 0; }
+    .app-thumb {
+      position: relative; flex: none; width: 172px;
+      background:
+        radial-gradient(circle at 78% 18%, rgba(251, 191, 36, .75), transparent 38%),
+        radial-gradient(circle at 20% 85%, rgba(244, 114, 182, .7), transparent 45%),
+        linear-gradient(135deg, #312e81 0%, #6d28d9 45%, #be185d 100%);
+    }
+    .app-thumb::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .45));
+    }
+    .app-thumb-badge, .app-thumb-dur {
+      position: absolute; z-index: 2;
+      font-family: var(--mono); font-size: 8px; letter-spacing: .06em;
+      background: rgba(0, 0, 0, .62); border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 4px; padding: 2px 5px; color: #fff;
+    }
+    .app-thumb-badge { top: 8px; left: 8px; }
+    .app-thumb-dur { bottom: 8px; right: 8px; }
+    .app-play {
+      position: absolute; z-index: 2; inset: 0; margin: auto;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: grid; place-items: center;
+      border: 1px solid rgba(255, 255, 255, .5); background: rgba(0, 0, 0, .28);
+      backdrop-filter: blur(4px);
+    }
+    .app-play .ic { width: 12px; height: 12px; color: #fff; margin-left: 1px; }
+    .app-now-body { flex: 1; min-width: 0; padding: 13px 15px 12px; }
+    .app-now-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .app-label { font-family: var(--mono); font-size: 7.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--dim); }
+    .app-pct { font-family: var(--mono); font-size: 9.5px; color: var(--violet); }
+    .app-now h4 {
+      margin: 6px 0 3px; font-size: 12.5px; font-weight: 500; letter-spacing: -.01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .app-meta { font-family: var(--mono); font-size: 8.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-bar { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .08); margin: 10px 0 7px; overflow: hidden; }
+    .app-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #7c3aed, #a78bfa 55%, #f472b6); }
+    .app-stats { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 7.5px; color: var(--faint); }
+    .app-side { padding: 13px 14px 14px; }
+    .app-side-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font-size: 10.5px; font-weight: 600; margin-bottom: 10px;
+    }
+    .app-tag {
+      font-family: var(--mono); font-size: 7px; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--violet); border: 1px solid rgba(167, 139, 250, .28); background: rgba(124, 58, 237, .12);
+      border-radius: 4px; padding: 1px 5px;
+    }
+    .app-seg {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      padding: 2px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0, 0, 0, .3);
+    }
+    .app-seg span { text-align: center; font-size: 8.5px; color: var(--dim); padding: 4px 0; border-radius: 4px; }
+    .app-seg .on { background: rgba(255, 255, 255, .075); color: #fff; }
+    .app-side-label {
+      font-family: var(--mono); font-size: 7px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--faint); margin: 10px 0 5px;
+    }
+    .app-picks { display: flex; gap: 4px; }
+    .app-picks span {
+      flex: 1; text-align: center; font-size: 8px; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 4px; padding: 4px 0;
+    }
+    .app-picks .on { color: #fff; border-color: rgba(167, 139, 250, .4); background: rgba(124, 58, 237, .18); }
+    .app-dl {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      margin-top: 12px; height: 30px; padding: 0 10px; border-radius: 6px;
+      background: linear-gradient(180deg, #7c3aed, #6d28d9); color: #fff;
+      font-size: 9.5px; font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+    }
+    .app-dl span { font-family: var(--mono); font-size: 7.5px; font-weight: 400; color: rgba(255, 255, 255, .65); }
+
+    /* --------------------------------------------------------------- proof */
+    .proof { padding: 72px 0 0; }
+    .proof-label {
+      text-align: center; font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--faint); margin-bottom: 26px;
+    }
+    .marquee {
+      overflow: hidden; padding: 4px 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    }
+    .marquee-track { display: flex; width: max-content; animation: marquee 46s linear infinite; }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+    .marquee-group { display: flex; align-items: center; gap: 24px; padding-right: 24px; }
+    .site {
+      font-size: 17px; font-weight: 500; letter-spacing: -.015em;
+      color: #77777f; white-space: nowrap; transition: color .2s ease;
+    }
+    .site:hover { color: #d4d4dc; }
+    .site::after { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #33333a; margin-left: 24px; vertical-align: 3px; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      margin-top: 54px; border: 1px solid var(--line); background: var(--line);
+    }
+    .stat { background: #000; padding: 26px 20px; text-align: center; }
+    .stat b { display: block; font-size: clamp(24px, 3vw, 33px); font-weight: 600; letter-spacing: -.045em; line-height: 1; }
+    .stat span {
+      display: block; margin-top: 9px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: var(--faint);
+    }
+
+    /* ------------------------------------------------------------- section */
+    .section { position: relative; padding: 124px 0; }
+    .sec-head { max-width: 760px; margin: 0 auto 54px; text-align: center; }
+    .label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+      color: #8b8b96; margin-bottom: 18px;
+    }
+    .label i { width: 5px; height: 5px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 9px rgba(167, 139, 250, .9); }
+    .h2 {
+      font-size: clamp(30px, 4.2vw, 47px); font-weight: 600; line-height: 1.06;
+      letter-spacing: -.04em; margin-bottom: 17px; text-wrap: balance;
+    }
+    .sec-sub { max-width: 610px; margin: 0 auto; color: var(--muted); font-size: 15.5px; line-height: 1.65; }
+
+    /* ------------------------------------------------------------- features */
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+    .tile {
+      position: relative; overflow: hidden;
+      padding: 23px 22px 21px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .028), rgba(255, 255, 255, .006));
+      transition: transform .25s var(--ease), border-color .25s ease, background .25s ease;
+    }
+    .tile::before {
+      content: ""; position: absolute; inset: 0 0 auto; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
+      opacity: .5;
+    }
+    .tile:hover { transform: translateY(-3px); border-color: var(--line-strong); background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .01)); }
+    .tile-icon {
+      width: 37px; height: 37px; border-radius: 10px; display: grid; place-items: center;
+      color: #c4b5fd; border: 1px solid rgba(167, 139, 250, .22); background: rgba(124, 58, 237, .13);
+      margin-bottom: 19px;
+    }
+    .tile-icon .ic { width: 17px; height: 17px; }
+    .tile h3 { font-size: 15px; font-weight: 600; letter-spacing: -.015em; margin-bottom: 7px; }
+    .tile p { color: var(--muted); font-size: 13px; line-height: 1.62; margin-bottom: 19px; min-height: 63px; }
+    .tag {
+      display: inline-block; max-width: 100%;
+      font-family: var(--mono); font-size: 10px; line-height: 1.2; color: #8b8b96;
+      border: 1px solid var(--line); border-radius: 5px; background: rgba(255, 255, 255, .035);
+      padding: 4px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .feature-more {
+      margin-top: 26px; text-align: center;
+      font-size: 12.5px; line-height: 1.7; color: var(--faint);
+    }
+    .feature-more b { color: var(--dim); font-weight: 500; }
+
+    /* ----------------------------------------------------------- split rows */
+    .split { padding: 110px 0; }
+    .split-inner {
+      max-width: 1110px; margin: 0 auto; padding: 0 24px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center;
+    }
+    .split-copy .label { margin-bottom: 16px; }
+    .split-copy .h2 { font-size: clamp(28px, 3.6vw, 40px); }
+    .split-copy > p { color: var(--muted); font-size: 14.5px; line-height: 1.7; max-width: 480px; }
+    .checklist { display: grid; gap: 11px; margin: 26px 0 30px; }
+    .checklist li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.55; color: #c6c6d0; }
+    .checklist .ic { width: 15px; height: 15px; flex: none; margin-top: 2px; color: var(--violet); }
+    .actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .text-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--violet);
+    }
+    .text-link .ic { width: 14px; height: 14px; transition: transform .2s ease; }
+    .text-link:hover .ic { transform: translateX(3px); }
+    .text-link:hover { color: #c4b5fd; }
+
+    /* ---------------------------------------------------------------- panel */
+    .panel {
+      border: 1px solid var(--line-strong); border-radius: 15px; overflow: hidden;
+      background: linear-gradient(180deg, #0c0c11, #08080b);
+      box-shadow: 0 50px 110px -60px rgba(109, 40, 217, .7), inset 0 1px 0 rgba(255, 255, 255, .04);
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 13px 15px; border-bottom: 1px solid var(--line);
+    }
+    .panel-title { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; }
+    .panel-title .ic { width: 14px; height: 14px; color: var(--violet); }
+    .pill {
+      font-family: var(--mono); font-size: 8px; letter-spacing: .11em; text-transform: uppercase;
+      color: #c4b5fd; background: rgba(124, 58, 237, .16); border: 1px solid rgba(167, 139, 250, .24);
+      border-radius: 999px; padding: 3px 7px;
+    }
+    .qrow { display: flex; align-items: center; gap: 11px; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    .qrow:last-child { border-bottom: 0; }
+    .qthumb {
+      position: relative; flex: none; width: 61px; height: 40px; border-radius: 6px; overflow: hidden;
+      display: grid; place-items: center;
+    }
+    .qthumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, .35)); }
+    .qthumb .ic { position: relative; z-index: 1; width: 13px; height: 13px; color: rgba(255, 255, 255, .92); }
+    .qt-1 { background: radial-gradient(circle at 75% 20%, rgba(251, 191, 36, .8), transparent 40%), linear-gradient(135deg, #312e81, #7c3aed 55%, #be185d); }
+    .qt-2 { background: radial-gradient(circle at 20% 80%, rgba(34, 211, 238, .55), transparent 45%), linear-gradient(135deg, #0e7490, #6d28d9); }
+    .qt-3 { background: radial-gradient(circle at 80% 80%, rgba(244, 114, 182, .7), transparent 45%), linear-gradient(135deg, #4c1d95, #9d174d); }
+    .qbody { flex: 1; min-width: 0; }
+    .qtitle { font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .qmeta { display: flex; align-items: center; gap: 7px; margin-top: 3px; font-family: var(--mono); font-size: 8px; color: var(--faint); }
+    .qmeta i { width: 2px; height: 2px; border-radius: 50%; background: #3f3f46; }
+    .qbar { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .08); margin-top: 7px; overflow: hidden; }
+    .qbar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #7c3aed, #a78bfa 55%, #f472b6); }
+    .qend { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+    .qpct { font-family: var(--mono); font-size: 8.5px; color: #b9b9c4; }
+    .qpct.done { color: var(--green); }
+    .qbtn {
+      font-size: 8.5px; color: var(--dim); border: 1px solid var(--line);
+      border-radius: 4px; padding: 2px 6px; background: rgba(255, 255, 255, .02);
+    }
+    .qfoot {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 11px 15px; border-top: 1px solid var(--line);
+      font-family: var(--mono); font-size: 8px; color: var(--faint);
+    }
+    .qfoot span { display: inline-flex; align-items: center; gap: 5px; }
+    .qfoot .ic { width: 11px; height: 11px; }
+
+    /* ------------------------------------------------------------- terminal */
+    .term-wrap { position: relative; }
+    .term-wrap::before {
+      content: ""; position: absolute; inset: 8% 2% -6%; z-index: -1;
+      background: radial-gradient(ellipse at center, rgba(124, 58, 237, .30), transparent 68%);
+      filter: blur(55px); pointer-events: none;
+    }
+    .term {
+      border: 1px solid var(--line-strong); border-radius: 14px; overflow: hidden;
+      background: #08080b;
+      box-shadow: 0 40px 100px -50px rgba(109, 40, 217, .55), inset 0 1px 0 rgba(255, 255, 255, .04);
+    }
+    .term-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 13px; border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #0c0c11, #09090c);
+    }
+    .term-head .window-dots i { width: 8px; height: 8px; }
+    .term-title { flex: 1; text-align: center; font-family: var(--mono); font-size: 9px; color: #55555f; }
+    .term-tag { font-family: var(--mono); font-size: 8px; color: #4b4b55; letter-spacing: .1em; text-transform: uppercase; }
+    .term-body { padding: 17px 18px 19px; font-family: var(--mono); font-size: 10.5px; line-height: 1.95; }
+    .term-line { display: flex; gap: 7px; white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .term-line::-webkit-scrollbar { display: none; }
+    .term-prompt { color: var(--violet); user-select: none; }
+    .term-cmd { color: #e4e4ec; }
+    .term-out { color: #64646f; }
+    .term-ok { color: var(--green); }
+    .term-ok::before { content: "✓ "; color: var(--green); }
+    .term-amber { color: var(--amber); }
+    .term-caret {
+      display: inline-block; width: 6px; height: 12px; margin-left: 2px;
+      background: var(--violet); vertical-align: -2px;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+    /* ----------------------------------------------------------------- cta */
+    .cta { position: relative; padding: 136px 0 124px; text-align: center; overflow: hidden; }
+    .cta::before {
+      content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: min(920px, 82%); height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+    }
+    .cta-glow {
+      position: absolute; left: 50%; bottom: -420px; transform: translateX(-50%);
+      width: 1000px; height: 640px; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(124, 58, 237, .22), transparent 66%);
+      filter: blur(40px);
+    }
+    .cta-inner { position: relative; z-index: 1; }
+    .cta .h2 { font-size: clamp(34px, 5.4vw, 60px); max-width: 800px; margin: 0 auto 18px; }
+    .cta-sub { max-width: 580px; margin: 0 auto; color: var(--muted); font-size: 15.5px; line-height: 1.65; }
+    .cta .installer { margin-top: 36px; }
+    .cta-actions { margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .cta .fineprint { margin-top: 18px; }
+
+    /* -------------------------------------------------------------- footer */
+    .footer { border-top: 1px solid var(--line); padding: 54px 0 30px; }
+    .footer-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 44px; }
+    .footer-brand .brand { margin-bottom: 14px; }
+    .footer-brand p { max-width: 290px; color: var(--faint); font-size: 12px; line-height: 1.7; }
+    .footer h4 {
+      font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--faint); font-weight: 500; margin-bottom: 14px;
+    }
+    .footer-links { display: grid; gap: 9px; }
+    .footer-links a { font-size: 12.5px; color: var(--muted); transition: color .16s ease; }
+    .footer-links a:hover { color: #fff; }
+    .footer-bottom {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+      margin-top: 44px; padding-top: 21px; border-top: 1px solid var(--line);
+      font-size: 11px; line-height: 1.6; color: #5b5b65;
+    }
+    .footer-bottom p { max-width: 560px; text-align: right; }
+
+    /* --------------------------------------------------------------- toast */
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; z-index: 100;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 15px; border-radius: 999px;
+      border: 1px solid var(--line-strong); background: rgba(18, 18, 24, .95);
+      box-shadow: 0 24px 60px -12px #000;
+      font-size: 12.5px; color: #e9e9f0; white-space: nowrap;
+      opacity: 0; pointer-events: none; transform: translate(-50%, 16px);
+      transition: opacity .22s ease, transform .22s ease;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast .ic { width: 14px; height: 14px; color: var(--green); }
+
+    /* -------------------------------------------------------------- reveal */
+    [data-reveal] {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity .75s var(--ease), transform .75s var(--ease);
+      transition-delay: var(--d, 0s);
+    }
+    [data-reveal].is-in { opacity: 1; transform: none; }
+
+    /* ------------------------------------------------------------ responsive */
+    @media (max-width: 1220px) {
+      .float-card { display: none; }
+    }
+    @media (max-width: 980px) {
+      .section { padding: 100px 0; }
+      .split { padding: 92px 0; }
+      .split-inner { gap: 46px; }
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+      .tile p { min-height: 0; }
+      .footer-top { grid-template-columns: 1.4fr 1fr 1fr; }
+      .footer-top .footer-brand { grid-column: 1 / -1; }
+      .footer-brand p { max-width: 420px; }
+    }
+    @media (max-width: 900px) {
+      .nav-link { display: none; }
+      .installer-body { align-items: flex-start; }
+      .cmd-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; }
+      .copy-btn { align-self: center; }
+      .hero { padding-top: 126px; }
+      .split-inner { grid-template-columns: 1fr; gap: 38px; }
+      .split-copy { order: 1; }
+      .split-visual { order: 2; }
+      .split-copy > p { max-width: 620px; }
+      .checklist { margin: 22px 0 26px; }
+      .app-cols { grid-template-columns: 1.5fr 1fr; }
+    }
+    @media (max-width: 720px) {
+      .hero { padding-top: 118px; }
+      .hero-title { margin-top: 22px; }
+      .hero-sub { font-size: 15.5px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat { padding: 22px 14px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .tile p { min-height: 0; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 34px; }
+      .footer-top .footer-brand { grid-column: 1 / -1; }
+      .footer-bottom { flex-direction: column; gap: 10px; }
+      .footer-bottom p { text-align: left; }
+      .app-side { display: none; }
+      .app-cols { grid-template-columns: 1fr; }
+      .app-thumb { width: 150px; }
+      .term-body { font-size: 9.5px; }
+      .split { padding: 82px 0; }
+      .cta { padding: 100px 0 96px; }
+    }
+    @media (max-width: 560px) {
+      .container { padding: 0 18px; }
+      .nav-inner { padding: 12px 18px; }
+      .brand-pill { display: none; }
+      .nav-gh { width: 34px; padding: 0; justify-content: center; margin: 0 4px; }
+      .nav-gh span { display: none; }
+      .hero { padding-top: 108px; }
+      .hero-title { font-size: clamp(38px, 11.5vw, 54px); }
+      .eyebrow { font-size: 9px; letter-spacing: .1em; }
+      .installer-body { align-items: flex-start; padding: 11px 10px 11px 12px; }
+      .cmd-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.55; }
+      .prompt { font-size: 11px; padding-top: 1px; }
+      .copy-btn { height: 30px; padding: 0 9px; }
+      .copy-btn span { display: none; }
+      .copy-btn .ic { width: 14px; height: 14px; }
+      .installer-tabs { gap: 1px; }
+      .itab { font-size: 11px; padding: 7px 8px; }
+      .fineprint { font-size: 11px; }
+      .window-bar { gap: 8px; padding: 0 10px; }
+      .window-addr { font-size: 9px; }
+      .window-mode { display: none; }
+      .app-main { padding: 22px 14px 20px; }
+      .app-nav { padding: 0 12px; }
+      .app-nav-right { gap: 8px; }
+      .app-engine { display: none; }
+      .app-head h3 { font-size: 24px; }
+      .app-url { height: 42px; padding-left: 10px; }
+      .app-link { font-size: 9px; }
+      .app-fetch { height: 30px; padding: 0 9px; font-size: 10px; }
+      .app-chips { display: none; }
+      .app-cols { margin-top: 16px; }
+      .app-now { flex-direction: column; }
+      .app-thumb { width: 100%; height: 112px; }
+      .app-now-body { padding: 12px 13px 11px; }
+      .app-stats { font-size: 7px; }
+      .proof { padding-top: 54px; }
+      .stat b { font-size: 26px; }
+      .section { padding: 82px 0; }
+      .sec-head { margin-bottom: 38px; }
+      .h2 { font-size: 30px; }
+      .qrow { gap: 9px; padding: 12px 12px; }
+      .qthumb { width: 52px; height: 35px; }
+      .qbtn { display: none; }
+      .panel-head, .qfoot { padding-left: 12px; padding-right: 12px; }
+      .split { padding: 74px 0; }
+      .split-inner { padding: 0 18px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 30px 22px; }
+      .toast { max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+      [data-reveal] { opacity: 1; transform: none; }
+      .marquee-track { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- icon sprite -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden">
+    <defs>
+      <linearGradient id="catchGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#a78bfa"/>
+        <stop offset=".55" stop-color="#f472b6"/>
+        <stop offset="1" stop-color="#fbbf24"/>
+      </linearGradient>
+      <symbol id="logo" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="16" fill="#0b0d13"/>
+        <rect x=".5" y=".5" width="63" height="63" rx="15.5" fill="none" stroke="rgba(255,255,255,.09)"/>
+        <path d="M32 15v24m-9-9 9 9 9-9M19 47h26" fill="none" stroke="url(#catchGrad)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="i-github" viewBox="0 0 24 24">
+        <path fill="currentColor" stroke="none" d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.2c-3.2.7-3.87-1.36-3.87-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.66.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/>
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5-5.9-3.2-5.9 3.2 1.2-6.5L2.5 9.4l6.6-.9Z"/></symbol>
+      <symbol id="i-film" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M7.5 4v16M16.5 4v16M2.5 9.5h5M2.5 14.5h5M16.5 9.5h5M16.5 14.5h5"/></symbol>
+      <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+      <symbol id="i-cc" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M11 10.2a2.6 2.6 0 1 0 0 3.6"/><path d="M17.5 10.2a2.6 2.6 0 1 0 0 3.6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-cookie" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-4 4 4 0 0 1-4-5Z"/><circle cx="9" cy="9" r=".8"/><circle cx="9" cy="15" r=".8"/><circle cx="15" cy="15" r=".8"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 7 5 5-5 5M13 17h6"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M8 5.5v13l11-6.5Z"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="nav" id="siteNav">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="Catch home">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg>
+        <span class="brand-name">Catch</span>
+        <span class="brand-pill">local</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#queue">Queue</a>
+        <a class="nav-link" href="#local">Local-first</a>
+        <a class="nav-gh" href="https://github.com/guostonline/yt-catch" data-repo="" target="_blank" rel="noreferrer" aria-label="Catch on GitHub">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg>
+          <span>GitHub</span>
+        </a>
+        <a class="btn btn-primary btn-sm" href="#install">Install</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============================================================= hero -->
+    <section class="hero" id="top">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> Local-first · No account · Zero ads</p>
+        <h1 class="hero-title display">
+          Save anything.<br />
+          <span class="grad">Keep everything.</span><br />
+          Upload nothing.
+        </h1>
+        <p class="hero-sub">
+          A local-first downloader for video, audio and playlists — up to 8K, MP3 or FLAC,
+          subtitles and SponsorBlock. No ads. No accounts. No cloud.
+        </p>
+
+        <div class="installer" id="install" aria-label="Install Catch">
+          <div class="installer-tabs" role="group" aria-label="Choose install method">
+            <button class="itab is-active" type="button" data-os="unix" aria-pressed="true">macOS &amp; Linux</button>
+            <button class="itab" type="button" data-os="win" aria-pressed="false">Windows</button>
+            <button class="itab" type="button" data-os="manual" aria-pressed="false">From source</button>
+          </div>
+          <div class="installer-body">
+            <span class="prompt" aria-hidden="true">$</span>
+            <code class="cmd-text">curl -fsSL https://raw.githubusercontent.com/guostonline/yt-catch/main/install.sh | bash</code>
+            <button class="copy-btn" type="button" aria-label="Copy install command">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg>
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
+        </div>
+        <p class="fineprint">
+          macOS <span class="sep">·</span> Apple Silicon &amp; Intel <span class="sep">·</span> Windows 10/11 <span class="sep">·</span> Linux<br />
+          Needs <a href="https://www.python.org/downloads/" target="_blank" rel="noreferrer">Python 3.10+</a> and git. The installer checks ffmpeg and tells you if anything is missing.
+        </p>
+        <p class="hero-alt">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg>
+          <a href="https://github.com/guostonline/yt-catch" data-repo="" target="_blank" rel="noreferrer">Read every line on GitHub</a>
+          <span class="dot-sep">·</span> Built on yt-dlp + ffmpeg
+        </p>
+
+        <!-- app preview -->
+        <div class="shot" aria-hidden="true">
+          <div class="float-card f-a"><span class="fc-dot"></span><b>8K</b><span>max quality</span></div>
+          <div class="float-card f-b"><span class="fc-dot"></span><b>MP3</b><span>320 kbps</span></div>
+          <div class="float-card f-c"><span class="fc-dot"></span><b>SRT</b><span>subtitles</span></div>
+
+          <div class="window">
+            <div class="window-bar">
+              <span class="window-dots"><i></i><i></i><i></i></span>
+              <span class="window-addr">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>
+                127.0.0.1:8765
+              </span>
+              <span class="window-mode">Local</span>
+            </div>
+            <div class="app">
+              <div class="app-nav">
+                <span class="app-brand">
+                  <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg>
+                  Catch <em>local</em>
+                </span>
+                <span class="app-nav-right">
+                  <span class="app-engine"><i></i> engine ready</span>
+                  <span class="app-ghost">Downloads</span>
+                </span>
+              </div>
+              <div class="app-main">
+                <div class="app-head">
+                  <p class="app-eyebrow"><i></i> YouTube &amp; 1000+ sites · up to 8K · MP3/FLAC</p>
+                  <h3>Save any video. <span class="grad">Beautifully.</span></h3>
+                  <div class="app-url">
+                    <svg class="ic" viewBox="0 0 24 24"><use href="#i-link"/></svg>
+                    <span class="app-link">youtube.com/watch?v=how-cpus-actually-work</span>
+                    <span class="app-fetch">Fetch <svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></span>
+                  </div>
+                  <div class="app-chips">
+                    <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-film"/></svg> 8K · HDR</span>
+                    <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-music"/></svg> MP3 · FLAC</span>
+                    <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg> Playlists</span>
+                    <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-cc"/></svg> Subtitles</span>
+                    <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-shield"/></svg> SponsorBlock</span>
+                  </div>
+                </div>
+                <div class="app-cols">
+                  <div class="app-card app-now">
+                    <div class="app-thumb">
+                      <span class="app-thumb-badge">4K</span>
+                      <span class="app-play"><svg class="ic" viewBox="0 0 24 24"><use href="#i-play"/></svg></span>
+                      <span class="app-thumb-dur">12:48</span>
+                    </div>
+                    <div class="app-now-body">
+                      <div class="app-now-top">
+                        <span class="app-label">Now downloading</span>
+                        <span class="app-pct">68%</span>
+                      </div>
+                      <h4>How CPUs actually work — Part 2</h4>
+                      <p class="app-meta">Veritasium · 2160p · MP4 · 412 MB</p>
+                      <div class="app-bar"><i style="width:68%"></i></div>
+                      <div class="app-stats"><span>12.4 MB/s</span><span>ETA 00:19</span><span>4 of 8 fragments</span></div>
+                    </div>
+                  </div>
+                  <div class="app-card app-side">
+                    <div class="app-side-head">Format <span class="app-tag">Video</span></div>
+                    <div class="app-seg"><span class="on">Video</span><span>Audio</span></div>
+                    <div class="app-side-label">Quality</div>
+                    <div class="app-picks"><span>8K</span><span class="on">4K</span><span>1080p</span><span>720p</span></div>
+                    <div class="app-side-label">Container</div>
+                    <div class="app-picks"><span class="on">MP4</span><span>MKV</span><span>WEBM</span></div>
+                    <div class="app-dl">Download <span>421 MB</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ proof -->
+    <section class="proof" aria-label="Supported sites and stats">
+      <p class="proof-label">One box for everywhere you watch</p>
+      <div class="marquee">
+        <div class="marquee-track">
+          <div class="marquee-group">
+            <span class="site">YouTube</span><span class="site">Vimeo</span><span class="site">Twitch</span>
+            <span class="site">SoundCloud</span><span class="site">TikTok</span><span class="site">Instagram</span>
+            <span class="site">X</span><span class="site">Dailymotion</span><span class="site">Bandcamp</span>
+            <span class="site">Archive.org</span><span class="site">Reddit</span><span class="site">Facebook</span>
+          </div>
+          <div class="marquee-group" aria-hidden="true">
+            <span class="site">YouTube</span><span class="site">Vimeo</span><span class="site">Twitch</span>
+            <span class="site">SoundCloud</span><span class="site">TikTok</span><span class="site">Instagram</span>
+            <span class="site">X</span><span class="site">Dailymotion</span><span class="site">Bandcamp</span>
+            <span class="site">Archive.org</span><span class="site">Reddit</span><span class="site">Facebook</span>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="stats" data-reveal>
+          <div class="stat"><b>8K</b><span>Max resolution</span></div>
+          <div class="stat"><b>1,000+</b><span>Sites supported</span></div>
+          <div class="stat"><b>0</b><span>Accounts required</span></div>
+          <div class="stat"><b>100%</b><span>Local by default</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= features -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <span class="label"><i></i>Everything included</span>
+          <h2 class="h2">The downloader you'd build for yourself.</h2>
+          <p class="sec-sub">Every option you actually want, none of the dark patterns you don't. Paste a link, pick a quality, keep the file.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="tile" data-reveal style="--d:.02s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-film"/></svg></span>
+            <h3>Video, up to 8K</h3>
+            <p>Pick a resolution or take the best available. MP4, MKV or WEBM with H.264, VP9 and AV1.</p>
+            <span class="tag">bestvideo+bestaudio</span>
+          </article>
+          <article class="tile" data-reveal style="--d:.06s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-music"/></svg></span>
+            <h3>Audio, properly tagged</h3>
+            <p>MP3, M4A, Opus, FLAC or WAV up to 320 kbps — with cover art and metadata embedded.</p>
+            <span class="tag">-x --audio-format mp3</span>
+          </article>
+          <article class="tile" data-reveal style="--d:.1s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-list"/></svg></span>
+            <h3>Whole playlists</h3>
+            <p>Queues of any size, item ranges and a folder per playlist. Numbered, named, organized.</p>
+            <span class="tag">1-10, 15, 20-30</span>
+          </article>
+          <article class="tile" data-reveal style="--d:.02s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cc"/></svg></span>
+            <h3>Subtitles, any language</h3>
+            <p>Manual and auto-generated captions, saved as .srt or embedded straight into the file.</p>
+            <span class="tag">--write-subs</span>
+          </article>
+          <article class="tile" data-reveal style="--d:.06s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg></span>
+            <h3>SponsorBlock</h3>
+            <p>Cut sponsor segments out of the file, or keep them as chapters. Your call, per download.</p>
+            <span class="tag">--sponsorblock-remove</span>
+          </article>
+          <article class="tile" data-reveal style="--d:.1s">
+            <span class="tile-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cookie"/></svg></span>
+            <h3>Cookies when you need them</h3>
+            <p>Sign-in walls and age gates? Pull cookies from Chrome, Safari, Firefox, Edge or Brave.</p>
+            <span class="tag">--cookies-from-browser</span>
+          </article>
+        </div>
+        <p class="feature-more" data-reveal>
+          <b>Also included:</b> thumbnails, chapters, metadata, filename templates, trim ranges, speed limits,
+          proxies, retries, parallel fragments and a skip-already-downloaded archive.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================ queue -->
+    <section class="split" id="queue">
+      <div class="split-inner">
+        <div class="split-visual" data-reveal>
+          <div class="panel" aria-hidden="true">
+            <div class="panel-head">
+              <span class="panel-title"><svg class="ic" viewBox="0 0 24 24"><use href="#i-download"/></svg> Queue</span>
+              <span class="pill">2 active</span>
+            </div>
+            <div class="qrow">
+              <span class="qthumb qt-1"><svg class="ic" viewBox="0 0 24 24"><use href="#i-play"/></svg></span>
+              <div class="qbody">
+                <p class="qtitle">How CPUs actually work — Part 2</p>
+                <p class="qmeta">4K <i></i> MP4 <i></i> 214 MB <i></i> 12.4 MB/s</p>
+                <div class="qbar"><i style="width:68%"></i></div>
+              </div>
+              <div class="qend"><span class="qpct">68%</span><button class="qbtn" type="button">Cancel</button></div>
+            </div>
+            <div class="qrow">
+              <span class="qthumb qt-2"><svg class="ic" viewBox="0 0 24 24"><use href="#i-music"/></svg></span>
+              <div class="qbody">
+                <p class="qtitle">Lo-fi beats to build to</p>
+                <p class="qmeta">MP3 <i></i> 320 kbps <i></i> 84 MB <i></i> ETA 00:04</p>
+                <div class="qbar"><i style="width:100%"></i></div>
+              </div>
+              <div class="qend"><span class="qpct done">Done</span><button class="qbtn" type="button">Reveal</button></div>
+            </div>
+            <div class="qrow">
+              <span class="qthumb qt-3"><svg class="ic" viewBox="0 0 24 24"><use href="#i-list"/></svg></span>
+              <div class="qbody">
+                <p class="qtitle">Design systems — 12-video playlist</p>
+                <p class="qmeta">1080p <i></i> 3 of 12 <i></i> 4.2 MB/s</p>
+                <div class="qbar"><i style="width:24%"></i></div>
+              </div>
+              <div class="qend"><span class="qpct">24%</span><button class="qbtn" type="button">Cancel</button></div>
+            </div>
+            <div class="qfoot">
+              <span><svg class="ic" viewBox="0 0 24 24"><use href="#i-folder"/></svg> Downloads/catch</span>
+              <span>SSE · live</span>
+            </div>
+          </div>
+        </div>
+        <div class="split-copy" data-reveal style="--d:.08s">
+          <span class="label"><i></i>The queue</span>
+          <h2 class="h2">Start it. Walk away. It's done.</h2>
+          <p>Drop in a single video or a 200-part playlist. Catch fetches the metadata, downloads in parallel, merges with ffmpeg and keeps you posted the whole way.</p>
+          <ul class="checklist">
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Live progress, speed and ETA — streamed, not polled.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Cancel mid-download, or clear the finished jobs.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Reveal any file in Finder, Explorer or your file manager.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Skip what you already have with the download archive.</li>
+          </ul>
+          <a class="text-link" href="#features">See everything it does <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ local -->
+    <section class="split" id="local">
+      <div class="split-inner">
+        <div class="split-copy" data-reveal>
+          <span class="label"><i></i>Local by design</span>
+          <h2 class="h2">Your links aren't our business.</h2>
+          <p>Catch runs on your machine and talks to 127.0.0.1. There's no account, no analytics endpoint, no queue in someone else's cloud. The source is right there if you don't believe us.</p>
+          <ul class="checklist">
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> No sign-up, no telemetry, no tracking pixels.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Cookies are read from your browser and stay on the machine.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Files land in downloads/ — never in a cloud bucket.</li>
+            <li><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg> Python + FastAPI backend, vanilla JS frontend, no build step.</li>
+          </ul>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/guostonline/yt-catch" data-repo="" target="_blank" rel="noreferrer">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg> Browse the source
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/guostonline/yt-catch/blob/main/README.md" data-repo="/blob/main/README.md" target="_blank" rel="noreferrer">Read the README</a>
+          </div>
+        </div>
+        <div class="split-visual" data-reveal style="--d:.08s">
+          <div class="term-wrap">
+            <div class="term" aria-hidden="true">
+              <div class="term-head">
+                <span class="window-dots"><i></i><i></i><i></i></span>
+                <span class="term-title">catch — zsh</span>
+                <span class="term-tag">local</span>
+              </div>
+              <div class="term-body">
+                <div class="term-line"><span class="term-prompt">~</span><span class="term-cmd">git clone https://github.com/guostonline/yt-catch.git</span></div>
+                <div class="term-line"><span class="term-out">Cloning into 'yt-catch'...</span></div>
+                <div class="term-line"><span class="term-cmd">cd yt-catch &amp;&amp; ./run.sh</span></div>
+                <div class="term-line"><span class="term-ok">venv ready · requirements installed</span></div>
+                <div class="term-line"><span class="term-ok">yt-dlp 2026.10.31 · ffmpeg found</span></div>
+                <div class="term-line"><span class="term-amber">➜ Catch is running at http://127.0.0.1:8765</span></div>
+                <div class="term-line"><span class="term-prompt">$</span><span class="term-caret"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== cta -->
+    <section class="cta" id="download">
+      <div class="cta-glow" aria-hidden="true"></div>
+      <div class="container cta-inner">
+        <div data-reveal>
+          <span class="label"><i></i>Install</span>
+          <h2 class="h2">Your downloads. Your machine. Your rules.</h2>
+          <p class="cta-sub">One command. No sign-up, no trial, no upsell. Catch starts at 127.0.0.1:8765 and stays out of your way.</p>
+        </div>
+
+        <div class="installer" aria-label="Install Catch" data-reveal style="--d:.08s">
+          <div class="installer-tabs" role="group" aria-label="Choose install method">
+            <button class="itab is-active" type="button" data-os="unix" aria-pressed="true">macOS &amp; Linux</button>
+            <button class="itab" type="button" data-os="win" aria-pressed="false">Windows</button>
+            <button class="itab" type="button" data-os="manual" aria-pressed="false">From source</button>
+          </div>
+          <div class="installer-body">
+            <span class="prompt" aria-hidden="true">$</span>
+            <code class="cmd-text">curl -fsSL https://raw.githubusercontent.com/guostonline/yt-catch/main/install.sh | bash</code>
+            <button class="copy-btn" type="button" aria-label="Copy install command">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg>
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="cta-actions">
+          <a class="btn btn-ghost" href="https://github.com/guostonline/yt-catch" data-repo="" target="_blank" rel="noreferrer">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-star"/></svg> Star on GitHub
+          </a>
+        </div>
+        <p class="fineprint">Apple Silicon &amp; Intel · Windows 10/11 · Linux · Python 3.10+ required</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================ footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="brand" href="#top" aria-label="Catch home">
+            <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg>
+            <span class="brand-name">Catch</span>
+          </a>
+          <p>A local tool for keeping the things you watch. Built on yt-dlp and ffmpeg, running on your own machine.</p>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <div class="footer-links">
+            <a href="#features">Features</a>
+            <a href="#queue">The queue</a>
+            <a href="#install">Install</a>
+          </div>
+        </div>
+        <div>
+          <h4>Project</h4>
+          <div class="footer-links">
+            <a href="https://github.com/guostonline/yt-catch" data-repo="" target="_blank" rel="noreferrer">GitHub</a>
+            <a href="https://github.com/guostonline/yt-catch/blob/main/README.md" data-repo="/blob/main/README.md" target="_blank" rel="noreferrer">README</a>
+            <a href="https://github.com/guostonline/yt-catch/issues" data-repo="/issues" target="_blank" rel="noreferrer">Issues</a>
+          </div>
+        </div>
+        <div>
+          <h4>Built with</h4>
+          <div class="footer-links">
+            <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noreferrer">yt-dlp</a>
+            <a href="https://ffmpeg.org" target="_blank" rel="noreferrer">ffmpeg</a>
+            <a href="https://fastapi.tiangolo.com" target="_blank" rel="noreferrer">FastAPI</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© <span data-year>2026</span> Catch. Local-first by default.</p>
+        <p>Download only content you own or have permission to keep. Not affiliated with YouTube.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" role="status" aria-live="polite">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>
+    <span data-toast-text>Copied</span>
+  </div>
+
+  <script>
+    (() => {
+      /* ▸ REPLACE THIS ONE CONSTANT with your real repository URL. */
+      const REPO = "https://github.com/guostonline/yt-catch";
+      const RAW = REPO.replace("https://github.com/", "https://raw.githubusercontent.com/");
+
+      const COMMANDS = {
+        unix: "curl -fsSL " + RAW + "/main/install.sh | bash",
+        win: "irm " + RAW + "/main/install.ps1 | iex",
+        manual: "git clone " + REPO + ".git && cd yt-catch && ./run.sh"
+      };
+
+      document.querySelectorAll("[data-repo]").forEach((link) => {
+        link.href = REPO + link.dataset.repo;
+      });
+
+      const isWindows = /Windows/i.test(navigator.userAgent);
+      const defaultOS = isWindows ? "win" : "unix";
+
+      const copyText = async (text) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.setAttribute("readonly", "");
+          area.style.cssText = "position:fixed;top:-1000px;left:-1000px;opacity:0";
+          document.body.appendChild(area);
+          area.select();
+          let ok = false;
+          try { ok = document.execCommand("copy"); } catch {}
+          area.remove();
+          return ok;
+        }
+      };
+
+      const toast = document.querySelector(".toast");
+      const toastText = toast.querySelector("[data-toast-text]");
+      let toastTimer;
+
+      const showToast = (message) => {
+        toastText.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+      };
+
+      document.querySelectorAll(".installer").forEach((box) => {
+        const tabs = Array.from(box.querySelectorAll(".itab"));
+        const code = box.querySelector(".cmd-text");
+        const prompt = box.querySelector(".prompt");
+        const copyButton = box.querySelector(".copy-btn");
+        const copyLabel = copyButton.querySelector("[data-copy-label]");
+        let os = defaultOS;
+
+        const render = () => {
+          tabs.forEach((tab) => {
+            const active = tab.dataset.os === os;
+            tab.classList.toggle("is-active", active);
+            tab.setAttribute("aria-pressed", active ? "true" : "false");
+            tab.tabIndex = active ? 0 : -1;
+          });
+          code.textContent = COMMANDS[os];
+          prompt.textContent = os === "win" ? "PS>" : "$";
+        };
+
+        tabs.forEach((tab, index) => {
+          tab.addEventListener("click", () => {
+            os = tab.dataset.os;
+            render();
+          });
+          tab.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+            event.preventDefault();
+            const direction = event.key === "ArrowRight" ? 1 : -1;
+            const next = tabs[(index + direction + tabs.length) % tabs.length];
+            os = next.dataset.os;
+            render();
+            next.focus();
+          });
+        });
+
+        copyButton.addEventListener("click", async () => {
+          const ok = await copyText(COMMANDS[os]);
+          if (!ok) {
+            showToast("Couldn't copy — select the command manually.");
+            return;
+          }
+          copyButton.classList.add("is-copied");
+          copyLabel.textContent = "Copied";
+          showToast(os === "win" ? "Copied — paste it into PowerShell." : "Copied — paste it into your terminal.");
+          setTimeout(() => {
+            copyButton.classList.remove("is-copied");
+            copyLabel.textContent = "Copy";
+          }, 2000);
+        });
+
+        render();
+      });
+
+      const nav = document.getElementById("siteNav");
+      const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 8);
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      const revealItems = document.querySelectorAll("[data-reveal]");
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        revealItems.forEach((element) => element.classList.add("is-in"));
+      } else {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-in");
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+        revealItems.forEach((element) => observer.observe(element));
+      }
+
+      const year = document.querySelector("[data-year]");
+      if (year) year.textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>

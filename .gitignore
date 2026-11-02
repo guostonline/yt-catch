@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+downloads/
+!downloads/.gitkeep
+*.log
+.run.log
+.env
+cookies.txt
+.agents/
+.gemini/
