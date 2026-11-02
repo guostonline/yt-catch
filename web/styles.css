@@ -1270,19 +1270,23 @@ input:checked + .switch-track .switch-knob { transform: translateX(15px); backgr
 .job[data-status="fetching"] .job-state-text,
 .job[data-status="downloading"] .job-state-text,
 .job[data-status="processing"] .job-state-text {
-  background-image: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0.95) 48%,
-    rgba(196, 181, 253, 0.9) 53%,
-    rgba(255, 255, 255, 0) 60%
-  );
-  background-size: 220% 100%;
-  background-repeat: no-repeat;
-  background-position: 120% 0;
+  background-image:
+    linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 42%,
+      rgba(255, 255, 255, 0.95) 49%,
+      rgba(196, 181, 253, 0.95) 52%,
+      rgba(255, 255, 255, 0) 60%
+    ),
+    linear-gradient(rgba(153, 161, 182, 0.78), rgba(153, 161, 182, 0.78));
+  background-size: 200% 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 200% 0, 0 0;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: shinyText 2.6s linear infinite;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shinyText 2.2s linear infinite;
 }
 .job[data-status="completed"] .job-state i { background: var(--green); }
 .job[data-status="error"] .job-state i { background: var(--red); }
@@ -1290,8 +1294,8 @@ input:checked + .switch-track .switch-knob { transform: translateX(15px); backgr
 .job[data-status="error"] .job-title { color: #f3c2c8; }
 @keyframes pulse { 50% { opacity: 0.35; } }
 @keyframes shinyText {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
+  0% { background-position: 200% 0, 0 0; }
+  100% { background-position: -200% 0, 0 0; }
 }
 
 .job-bar {
